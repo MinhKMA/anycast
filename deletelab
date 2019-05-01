@@ -1,0 +1,16 @@
+#!/bin/bash
+docker rm -f client1
+docker rm -f client2
+docker rm -f dns1
+docker rm -f dns2
+docker rm -f labrouter0
+docker rm -f labrouter1
+docker rm -f labrouter2
+docker rm -f labrouter3
+docker network rm lab-network-0
+docker network rm lab-network-1
+docker network rm lab-network-2
+docker network rm lab-network-3
+docker network rm lab-network-4
+docker network rm lab-network-5
+docker network rm lab-network-6

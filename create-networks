@@ -1,0 +1,5 @@
+#!/bin/bash
+docker network create lab-network-0 --subnet 10.1.0.0/24 --gateway 10.1.0.254
+docker network create lab-network-0 --subnet 10.1.1.0/24 --gateway 10.1.1.254
+docker network create lab-network-0 --subnet 10.1.2.0/24 --gateway 10.1.2.254
+docker network create lab-network-3 --subnet 10.1.3.0/24 --gateway 10.1.3.254

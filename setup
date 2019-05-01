@@ -1,0 +1,108 @@
+#!/bin/bash
+
+#Create networks
+docker network create lab-network-0 --subnet 10.1.0.0/24 --gateway 10.1.0.254
+docker network create lab-network-1 --subnet 10.1.1.0/24 --gateway 10.1.1.254
+docker network create lab-network-2 --subnet 10.1.2.0/24 --gateway 10.1.2.254
+docker network create lab-network-3 --subnet 10.1.3.0/24 --gateway 10.1.3.254
+docker network create lab-network-4 --subnet 10.1.4.0/24 --gateway 10.1.4.254
+docker network create lab-network-5 --subnet 10.1.5.0/24 --gateway 10.1.5.254
+docker network create lab-network-6 --subnet 10.1.6.0/24 --gateway 10.1.6.254
+
+#Create Router containers
+docker create -it --name labrouter0 --network lab-network-0 --ip 10.1.0.1 --privileged router /bin/bash
+docker network connect lab-network-1 --ip 10.1.1.253 labrouter0
+
+
+docker create -it --name labrouter1 --network lab-network-1 --ip 10.1.1.1 --privileged router /bin/bash
+docker network connect lab-network-2 --ip 10.1.2.253 labrouter1
+docker network connect lab-network-5 --ip 10.1.5.1 labrouter1
+
+docker create -it --name labrouter2 --network lab-network-2 --ip 10.1.2.1 --privileged router /bin/bash
+docker network connect lab-network-3 --ip 10.1.3.253 labrouter2
+docker network connect lab-network-6 --ip 10.1.6.1 labrouter2
+
+docker create -it --name labrouter3 --network lab-network-3 --ip 10.1.3.1 --privileged router /bin/bash
+docker network connect lab-network-4 --ip 10.1.4.253 labrouter3
+
+#Create DNS Server Containers
+
+docker create -it --name dns1 --network lab-network-5 --ip 10.1.5.10 --privileged dns-server /bin/bash
+docker create -it --name dns2 --network lab-network-6 --ip 10.1.6.10 --privileged dns-server /bin/bash
+
+#Create DNS Client containers
+
+docker create -it --name client1 --network lab-network-0 --ip 10.1.0.10 --dns 192.168.0.10 --privileged dns-client /bin/bash
+docker create -it --name client2 --network lab-network-4 --ip 10.1.4.10 --dns 192.168.0.10 --privileged dns-client /bin/bash
+
+#Start the containers
+docker start labrouter0
+docker start labrouter1
+docker start labrouter2
+docker start labrouter3
+docker start dns1
+docker start dns2
+docker start client1
+docker start client2
+
+#Set routes on clients
+
+docker exec client1 route del -net 0/0
+docker exec client1 route add default gw 10.1.0.1
+docker exec client1 echo "Client1 Routes"
+docker exec client1 route -n
+
+docker exec client2 route del -net 0/0
+docker exec client2 route add default gw 10.1.4.253
+docker exec client2 echo "Client2 Routes"
+docker exec client2 route -n
+
+docker exec dns1 route del -net 0/0
+docker exec dns1 route add default gw 10.1.5.1
+docker exec dns1 echo "DNS1 Routes"
+docker exec dns1 route -n
+
+docker exec dns2 route del -net 0/0
+docker exec dns2 route add default  gw 10.1.6.1
+docker exec dns2 echo "DNS2 Routes"
+docker exec dns2 route -n
+
+#Copy DNS configs
+
+docker cp ./configs/dns/dns1/named.conf.options dns1:/etc/bind/named.conf.options
+docker cp ./configs/dns/dns1/named.conf.local dns1:/etc/bind/named.conf.local
+docker cp ./configs/dns/dns1/minhkma.local.db dns1:/etc/bind/minhkma.local.db
+
+docker cp ./configs/dns/dns2/named.conf.options dns2:/etc/bind/named.conf.options
+docker cp ./configs/dns/dns2/named.conf.local dns2:/etc/bind/named.conf.local
+docker cp ./configs/dns/dns2/minhkma.local.db dns2:/etc/bind/minhkma.local.db
+
+
+#Restart DNS
+
+#OSPF configs
+docker cp ./configs/labrouters/ospfd.conf.labrouter0 labrouter0:/etc/quagga/ospfd.conf
+docker cp ./configs/labrouters/ospfd.conf.labrouter1 labrouter1:/etc/quagga/ospfd.conf
+docker cp ./configs/labrouters/ospfd.conf.labrouter2 labrouter2:/etc/quagga/ospfd.conf
+docker cp ./configs/labrouters/ospfd.conf.labrouter3 labrouter3:/etc/quagga/ospfd.conf
+docker cp ./configs/labrouters/ospfd.conf.dns1 dns1:/etc/quagga/ospfd.conf
+docker cp ./configs/labrouters/ospfd.conf.dns2 dns2:/etc/quagga/ospfd.conf
+
+docker exec dns1 ifconfig lo:0 192.168.0.10 netmask 255.255.255.255
+docker exec dns2 ifconfig lo:0 192.168.0.10 netmask 255.255.255.255
+docker exec dns1 ifconfig lo:1 1.1.1.1 netmask 255.255.255.255
+docker exec dns2 ifconfig lo:1 1.1.1.1 netmask 255.255.255.255
+
+docker exec dns1 service bind9 restart
+docker exec dns2 service bind9 restart
+docker exec labrouter0 service quagga start
+docker exec labrouter1 service quagga start
+docker exec labrouter2 service quagga start
+docker exec labrouter3 service quagga start
+docker exec dns1 sed -i 's/ospfd=no/ospfd=yes/g' /etc/quagga/daemons
+docker exec dns2 sed -i 's/ospfd=no/ospfd=yes/g' /etc/quagga/daemons
+docker exec dns1 service quagga start
+docker exec dns2 service quagga start
+
+
+

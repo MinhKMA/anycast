@@ -1,0 +1,11 @@
+$TTL 86400
+@   IN  SOA     ns1.minhkma.local. admin.minhkma.local. (
+        2011071001  ;Serial
+        3600        ;Refresh
+        1800        ;Retry
+        604800      ;Expire
+        86400       ;Minimum TTL
+)
+@       IN  NS          ns1.minhkma.local.
+@       IN  A           1.2.0.5
+ns1	IN  A		10.1.1.10

@@ -1,0 +1,16 @@
+! -*- ospf -*-
+!
+! OSPFd sample configuration file
+!
+!
+hostname ospfd
+password zebra
+!enable password please-set-at-here
+!
+router ospf
+ospf router-id 10.1.1.1
+network 10.1.1.0/24 area 3
+network 10.1.5.0/24 area 1
+network 10.1.2.0/24 area 0
+!
+log stdout

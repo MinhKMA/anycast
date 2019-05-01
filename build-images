@@ -1,0 +1,4 @@
+#!/bin/bash
+docker build -t dns-server ./dns/
+docker build -t dns-client ./client/
+docker build -t router ./router
