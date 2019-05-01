@@ -18,6 +18,7 @@ Quy hoạch IP
 
 ```
 git clone https://github.com/MinhKMA/anycast.git
+cd anycast
 ./build-images
 ./setup
 ```
