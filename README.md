@@ -170,4 +170,3 @@ Như vậy qua đó ta có thể thấy cùng truy vấn bản ghi ở DNS serve
 
 ### Bài lab của tôi kết thúc ở đây. Rất mong được sự góp ý của độc giả.
 
-minhkma
