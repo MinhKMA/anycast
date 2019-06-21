@@ -169,3 +169,5 @@ Như vậy qua đó ta có thể thấy cùng truy vấn bản ghi ở DNS serve
     ***WOOO! Ban đầu giá trị bản ghi là 1.2.0.5 cơ mà....***
 
 ### Bài lab của tôi kết thúc ở đây. Rất mong được sự góp ý của độc giả.
+
+minhkma
